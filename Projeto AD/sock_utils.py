@@ -1,95 +1,32 @@
 """
 Aplicações Distribuídas - Projeto 1 - sock_utils.py
 Grupo: 14
-Números de aluno: 56699 XXXXX
+Números de aluno: 56699 58618
 """
-import socket
+import socket as s
 
-def create_server_socket(host, port):
-    """
-    Criar um servidor socket e 
-    """
-    try:
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((host, port))
-        return server_socket
-    except socket.error as e:
-        print(f"Error creating server socket: {e}")
-        return None
+def create_tcp_server_socket(address, port, queue_size):
 
-def accept_connection(server_socket):
-    """
-    aceitar conexão entre sockets
-    """
-    try:
-        conn_sock, (addr, port) = server_socket.accept()
-        print(f"Connected to {addr} on port {port}")
-        return conn_sock
-    except socket.error as e:
-        print(f"Error accepting connection: {e}")
-        return None
+    listener_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+    listener_socket.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
+    listener_socket.bind((address, port))
+    listener_socket.listen(queue_size)
+    return listener_socket
 
-def create_client_socket():
-    """
-    Criar um cliente (socket)
-    """
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        return client_socket
-    except socket.error as e:
-        print(f"Error creating client socket: {e}")
-        return None
 
-def connect_to_server(client_socket, host, port):
-    """
-    Connectar ao server o client, intermediário
-    """
-    try:
-        client_socket.connect((host, port))
-        return True
-    except socket.error as e:
-        print(f"Error connecting to {host}:{port}: {e}")
-        return False
+def create_tcp_client_socket(address, port):
 
-def receive_data(socket_obj):
-    """
-    Receber a data dos sockets
-    """
-    try:
-        data = socket_obj.recv(1024)
-        return data.decode()
-    except socket.error as e:
-        print(f"Error receiving data: {e}")
-        return None
+    client_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
 
-def send_data(socket_obj, data):
-    """
-    Enviar dat para os sockets 
-    """
-    try:
-        socket_obj.sendall(data.encode())
-        return True
-    except socket.error as e:
-        print(f"Error sending data: {e}")
-        return False
+    client_socket.connect((address, port))
+    return client_socket
 
-def close_socket(socket_obj):
-    """
-    Fechar o socket
-    """
-    try:
-        socket_obj.close()
-    except socket.error as e:
-        print(f"Error closing socket: {e}")
 
-def shutdown_socket(socket_obj):
-    """
-    Finito socket (?)
-    """
-    try:
-        socket_obj.shutdown(socket.SHUT_RDWR)
-    except socket.error as e:
-        print(f"Error shutting down socket: {e}")
+def receive_all(socket, length):
+    dados_recebidos=''
+
+    dados_recebidos=socket.recv(length)
+    return dados_recebidos
 
     
 

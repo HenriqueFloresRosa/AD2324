@@ -1,7 +1,7 @@
 """
 Aplicações Distribuídas - Projeto 1 - kuko_data.py
 Grupo: 14
-Números de aluno: 56699 XXXXX
+Números de aluno: 56699 58618
 """
 
 import time
@@ -75,13 +75,7 @@ class Kuko:
         quiz.timestamp_P = int(time.time())
         return True
 
-# Exmeplo?:
-# kuko = Kuko()
-# q1 = kuko.create_question(1, "What is the capital of France?", ["London", "Paris", "Berlin", "Madrid"], 2)
-# q2 = kuko.create_question(2, "Which planet is known as the Red Planet?", ["Earth", "Mars", "Venus", "Jupiter"], 1)
-# qset = kuko.create_qset(1, [1, 2])
-# quiz = kuko.create_quiz(1, 1)
-# kuko.launch_quiz(1)
+
 
 
 
