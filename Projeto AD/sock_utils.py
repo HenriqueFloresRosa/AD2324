@@ -23,10 +23,16 @@ def create_tcp_client_socket(address, port):
 
 
 def receive_all(socket, length):
-    dados_recebidos=''
+    dados_recebidos=b''
 
-    dados_recebidos=socket.recv(length)
+    while len(dados_recebidos) < length:
+        dados_recebidos += socket.recv(length - len(dados_recebidos))
     return dados_recebidos
+   
+
+
+
+
 
     
 

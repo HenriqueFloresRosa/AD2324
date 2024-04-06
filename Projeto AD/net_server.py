@@ -3,57 +3,44 @@ Aplicações Distribuídas - Projeto 1 - net_server.py
 Grupo: 14
 Números de aluno: 56699 58618
 """
-import socket
-from sock_utils import *
 
-class Server:
+import sock_utils as su
+import socket as s
+
+class NetServer:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = s.socket(s.AF_INET, s.SOCK_STREAM)
         self.conn_sock = None
 
-    def accept(self):
+    def accept_connection(self):
         try:
             self.conn_sock, (addr, port) = self.sock.accept()
-            print(f"Connected to {addr} on port {port}")
-            return True
-        except socket.error as e:
+            print(f"Accepted connection from {addr}:{port}")
+        except s.error as e:
             print(f"Error accepting connection: {e}")
-            return False
 
-    def listen(self):
-        try:
-            self.sock.bind((self.host, self.port))
-            self.sock.listen(1)
-            return True
-        except socket.error as e:
-            print(f"Error listening on {self.host}:{self.port}: {e}")
-            return False
-
-    def recv(self):
+    def receive_message_from_stub(self):
         try:
             data = self.conn_sock.recv(1024)
+            print(f"RECV from Stub: {data.decode()}")
             return data.decode()
-        except socket.error as e:
-            print(f"Error receiving data: {e}")
+        except s.error as e:
+            print(f"Error receiving message from Stub: {e}")
             return None
 
-    def send(self, texto):
+    def send_response_to_stub(self, response):
         try:
-            self.conn_sock.sendall(texto.encode())
-            return True
-        except socket.error as e:
-            print(f"Error sending data: {e}")
-            return False
+            self.conn_sock.sendall(response.encode())
+            print(f"SENT to Stub: {response}")
+        except s.error as e:
+            print(f"Error sending response to Stub: {e}")
 
-    def close(self):
+    def close_connection(self):
         if self.conn_sock:
             self.conn_sock.close()
         self.sock.close()
 
     def __del__(self):
-        self.close()
-
-
-
+        self.close_connection()

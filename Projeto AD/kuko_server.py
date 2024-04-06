@@ -1,22 +1,17 @@
-"""
-Aplicações Distribuídas - Projeto 1 - kuko_server.py
-Grupo: 14
-Números de aluno: 56699 58618
-"""
-
-import socket
+import socket as s
 import sys
-from kuko_data import Kuko
+from kuko_data import KUKO
+from kuko_ske import *
 
 class KukoServer:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.kuko = Kuko()
+        self.kuko = KUKO()  # Instância da classe KUKO para gerenciar perguntas e quizzes
 
     def start(self):
         try:
-            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
             server_socket.bind((self.host, self.port))
             server_socket.listen(1)
             print(f"Kuko server started on {self.host}:{self.port}")
@@ -32,29 +27,35 @@ class KukoServer:
         try:
             conn_socket, (client_host, client_port) = server_socket.accept()
             print(f"Client connected from: {client_host} on port: {client_port}")
-            self.handle_client(conn_socket)
+            
+            # Receber o ID do participante
+            participant_id = conn_socket.recv(1024).decode().strip()
+            print(f"Participant ID: {participant_id}")
+
+            # Responder juntamente com o endereço do cliente
+            response = f"Connection from {conn_socket.getpeername()} Participant ID: {participant_id}"
+            conn_socket.sendall(response.encode())
+
+            self.handle_client(conn_socket, participant_id)
         except Exception as e:
             print("Error accepting connection:", e)
 
-    def handle_client(self, conn_socket):
+    def handle_client(self, conn_socket, participant_id):
         try:
             while True:
                 request = conn_socket.recv(1024).decode().strip()
                 if not request:
                     break
-                print(f"Received request from client: {request}")
-                # Process request and generate response
-                response = self.process_request(request)
+
+                response = self.process_request(request, participant_id)
                 conn_socket.sendall(response.encode())
+                print("RECV:", response)  # Resposta do servidor
         except Exception as e:
             print("Error handling client request:", e)
         finally:
             print("Closing connection with client.")
             conn_socket.close()
 
-    def process_request(self, request):
-    
-        return "Server response to client request: " + request
 
 def main():
     if len(sys.argv) != 3:
