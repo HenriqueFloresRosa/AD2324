@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Add Question</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+<body>
+
+<h1>POST - Add Question</h1>
+
+
+<div id="question">
+    <div>
+        <label for="text">Question Text:</label>
+        <input type="text" id="question_text" name="question_text" required>
+    </div>
+    <div>
+        <label for="options">Answers (separated by ';'):</label>
+        <input type="text" id="answers" name="answers" required>
+    </div>
+    <div>
+        <label for="correctIndex">Correct Answer (Index k):</label>
+        <input type="number" id="k" name="k" required>
+    </div>
+    <div>
+        <input class="postbutton" type="button" value="Add">
+    </div>
+    <h2>Request:</h2>
+    <div id="request_msg">
+        <pre>N/A</pre>
+    </div>
+    <h2>Response:</h2>
+    <div id="response_msg">
+        <pre>n/a</pre>
+    </div>
+<div>
+    
+<script>
+
+const Div = document.getElementById("question");
+console.log('DIV',Div)
+const Button = Div.querySelector(".postbutton");
+
+Button.addEventListener("click", function(event) {
+    // Get form dataext:
+    const q = Div.querySelector("#question_text").value;
+    const a = Div.querySelector("#answers").value;
+    const k = parseInt(Div.querySelector("#k").value);
+
+    const formData = {
+        question: q,
+        answers: a,
+        k: k
+    };
+    console.log( formData )
+
+
+     // Create a new <pre> element to display the JSON structure
+    const preElement = document.querySelector("#request_msg pre");
+
+    // Loop through all keys in the data object and construct a formatted string
+    let formattedJson = "{\n";
+    for (const key in formData) {
+        if (Object.hasOwnProperty.call(formData, key)) {
+            formattedJson += `  "${key}": ${JSON.stringify(formData[key])},\n`;
+        }
+    }
+    formattedJson = formattedJson.slice(0, -2); // Remove the last comma and newline
+    formattedJson += "\n}";
+
+    preElement.textContent = formattedJson;
+
+    fetch("http://127.0.0.1:5005/question", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        
+
+        // Create a new <pre> element to display the JSON structure
+        const preElement = document.querySelector("#response_msg pre");
+
+        // Loop through all keys in the data object and construct a formatted string
+        let formattedJson = "{\n";
+        for (const key in data) {
+            if (Object.hasOwnProperty.call(data, key)) {
+                formattedJson += `  "${key}": ${JSON.stringify(data[key])},\n`;
+            }
+        }
+        formattedJson = formattedJson.slice(0, -2); // Remove the last comma and newline
+        formattedJson += "\n}";
+
+        preElement.textContent = formattedJson;
+
+
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("An error occurred while adding the question.");
+    });
+});
+
+ 
+</script>
+
+</body>
+</html>
