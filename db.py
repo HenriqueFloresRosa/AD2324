@@ -11,17 +11,17 @@ def bd():
 
         cursor.execute("""
             CREATE TABLE question (
-                id_question INTEGER PRIMARY KEY, 
-                question VARCHAR, 
-                answer VARCHAR, 
-                k INTEGER
+                id_question INTEGER PRIMARY KEY AUTOINCREMENT,  
+                question TEXT NO NULL VARCHAR, 
+                answer TEXT NO NULL VARCHAR, 
+                k INT NOT NULL
             );
         """)
         
         cursor.execute("""
             CREATE TABLE q_set (
-                id_set INTEGER PRIMARY KEY, 
-                question VARCHAR, 
+                id_set INTEGER PRIMARY KEY AUTOINCREMENT,   
+                question TEXT NOT NULL, 
                 FOREIGN KEY (question) REFERENCES question(id_question) ON DELETE CASCADE
             );
         """)
