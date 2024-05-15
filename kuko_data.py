@@ -77,7 +77,7 @@ class Quiz:
     def buscar_correnteQuestion(self):
         return self.questions_set[self.questions_i][0]
     
-    def nextQuestion(self):
+    def ProximaQuestion(self):
         self.questions_i += 1
         
         if self.questions_i >= len(self.questions_set):
@@ -87,7 +87,36 @@ class Quiz:
         
         return self.questions_set[self.questions_i][0]
     
-    def
+    def responderQuiz(self, id_answer, id_participant):
+        return self.replies[id_participant][self.question_i] = id_answer
+
+
+    def getRelatorio(self, id_pariticipante):
+        participanteAnswers = self.relpies[id_participant}
+        corretoN = 0
+        pontua = 0
+        i = 0
+        for question in self.question_set:
+            scores.append(i[1])
+
+            respostas += str(i[1])+" points ## id "+str(id[0].getId())+" ## "+str(id[0])+" ("+str(id[0].k)+")\n"
+
+        participantes = ""
+
+        for i in self.getParticipants().items():
+            participantes += "Participante: "+str(i[0])+", Respostas: "+str(i[1])+"\n"
+
+        return f"ID do Quiz: 1\n \
+                Estado: {self.state}\n \
+                Pontos p/pergunta: {scores} \n \
+                Pergunta atual: {self.question_i} \n \
+                Número de participantes: {len(self.participants)} \n \
+                Iniciado a: {self.timestamp_P} \n \
+                Terminado a: {self.timestamp_E} \n \
+                Perguntas e R: \n \
+                {respostas} \
+                {participantes}"
+        
         
         
 
@@ -101,7 +130,7 @@ class KUKO:
         self.cursor = self.connection_db.cursor()
         self.question_id_counter = 0
 
-    def addquest(self,id_question, questions, answers, k):
+    def addquestion(self,id_question, questions, answers, k):
         #
         id_question = self.question_id_counter
         
