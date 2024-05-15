@@ -6,182 +6,153 @@ Números de aluno: 56699 58618
 
 import time
 import copy
-"import sqlite3
-"from db import *
-from typing import Dict, List, Tuple
-
+import sqlite3
+from typing import List, Dict
 
 class Question:
-    
-
-    def __init__(self, answers: List[str], k: int, question=str, Kukodata):
+    def __init__(self, answers: List[str], k: int, question: str, Kukodata):
         self.id_question = len(Kukodata.getQuestions()) + 1
         self.question = question  # pergunta
         self.answers = answers  # respostas admitidas
         self.k = k  # resposta correta
 
-    def ID(self):
+    def IDQUESTION(self):
         return self.id_question
 
     def __str__(self):
-        return f"{self.id_question};{';'.join(self.answers)}"
+        return f"{self.id_question};{self.question};{';'.join(self.answers)}"
 
 class QuestionSet:
-
-    def __init__(self, questions, Kukodata):
+    def __init__(self, questions: List[int], Kukodata):
         self.id_set = len(Kukodata.getQuestSets()) + 1
         self.quest_ids = questions
 
-    def ID (self):
+    def IDQSET(self):
         return self.id_set
 
-
-
-class Quiz:
-    def __init__(self, id_set, score_set, Kukodata):
+class QuizGame:
+    def __init__(self, id_set: int, score_set: Dict[int, int], Kukodata):
         self.id_quiz = len(Kukodata.getQuizzes()) + 1
         self.id_set = id_set
 
         questions = []
-        i = 0
-        for question in Kukodata.getQuestions()[id_set ].questions:
-            questionCopy = copy.deepcopy(Kukodata.getQuestions().questions[question])
-            questions.append(questionCopy,score_set[i])
-            i += 1
+        for question_id in Kukodata.getQuestions()[id_set].questions:
+            question_copy = copy.deepcopy(Kukodata.getQuestions().questions[question_id])
+            questions.append((question_copy, score_set[question_id]))
 
-            self.questions_set = questions
+        self.questions_set = questions
+        self.state = "PREPARED"
+        self.timestamp_P = time.time()
+        self.timestamp_E = None
+        self.timestamp_i = 0
+        self.questions_i = 0
+        self.participants = []
+        self.replies = {}
 
-            self.state = "PREPARED"
-            self.timestamp_P = time.time()
-            self.timestamp_E = None
-            self.timestamp_i = 0
-            self.questions_i = 0
-            self.participants = []
-            self.replies = {}
-
-    def regsitar_participantes(self, participant_id):
+    def register_participant(self, participant_id: int):
         self.participants.append(participant_id)
-        self.replies[participant_id] = []
-        for question in self.questions_set:
-            self.replies[participant_id].append(0)
+        self.replies[participant_id] = [0] * len(self.questions_set)
 
-    def começar_quiz(self):
+    def start_quiz(self):
         self.state = "ONGOING"
 
     def getIDquiz(self):
         return self.id_quiz
-    
-    def buscar_Participante(self):
+
+    def getParticipants(self):
         return self.participants
-    
-    def buscar_correnteQuestion(self):
+
+    def getCurrentQuestion(self):
         return self.questions_set[self.questions_i][0]
-    
-    def ProximaQuestion(self):
+
+    def nextQuestion(self):
         self.questions_i += 1
-        
         if self.questions_i >= len(self.questions_set):
             self.questions_i = 0
             self.state = "ENDED"
             self.timestamp_E = time.time()
-        
         return self.questions_set[self.questions_i][0]
-    
-    def responderQuiz(self, id_answer, id_participant):
-        return self.replies[id_participant][self.question_i] = id_answer
 
+    def answerQuestion(self, id_answer: int, id_participant: int):
+        self.replies[id_participant][self.questions_i] = id_answer
 
-    def getRelatorio(self, id_pariticipante):
-        participanteAnswers = self.relpies[id_participant}
-        corretoN = 0
-        pontua = 0
-        i = 0
-        for question in self.question_set:
-            scores.append(i[1])
-
-            respostas += str(i[1])+" points ## id "+str(id[0].getId())+" ## "+str(id[0])+" ("+str(id[0].k)+")\n"
+    def getReport(self, id_participant: int):
+        participant_answers = self.replies[id_participant]
+        correct_count = 0
+        score = 0
+        scores = []
+        respostas = ""
+        for i, (question, points) in enumerate(self.questions_set):
+            scores.append(points)
+            respostas += f"{points} points ## id {question.ID()} ## {question} ({question.k})\n"
 
         participantes = ""
+        for participant, answers in self.replies.items():
+            participantes += f"Participante: {participant}, Respostas: {answers}\n"
 
-        for i in self.getParticipants().items():
-            participantes += "Participante: "+str(i[0])+", Respostas: "+str(i[1])+"\n"
-
-        return f"ID do Quiz: 1\n \
-                Estado: {self.state}\n \
-                Pontos p/pergunta: {scores} \n \
-                Pergunta atual: {self.question_i} \n \
-                Número de participantes: {len(self.participants)} \n \
-                Iniciado a: {self.timestamp_P} \n \
-                Terminado a: {self.timestamp_E} \n \
-                Perguntas e R: \n \
-                {respostas} \
-                {participantes}"
-        
-        
-        
-
-#########################################################################################################
+        return (f"ID do Quiz: {self.id_quiz}\n"
+                f"Estado: {self.state}\n"
+                f"Pontos p/pergunta: {scores} \n"
+                f"Pergunta atual: {self.questions_i} \n"
+                f"Número de participantes: {len(self.participants)} \n"
+                f"Iniciado a: {self.timestamp_P} \n"
+                f"Terminado a: {self.timestamp_E} \n"
+                f"Perguntas e R: \n{respostas}"
+                f"{participantes}")
 
 class KUKO:
-    
-    
-    def __init__(self, db_file):
+    def __init__(self, db_file: str):
         self.connection_db = sqlite3.connect(db_file)
         self.cursor = self.connection_db.cursor()
         self.question_id_counter = 0
 
-    def addquestion(self,id_question, questions, answers, k):
-        #
-        id_question = self.question_id_counter
-        
-        quest = Question(id_question, questions, answers, k)
+    def addQuestion(self, question_text: str, answers: List[str], k: int):
+        self.question_id_counter += 1
+        question = Question(answers, k, question_text, self)
 
-        # Insere dados na tabela "question"
-        self.cursor.execute("INSERT INTO question (id_question, questions, answers, k) VALUES (?, ?, ?, ?)",
-                            (quest.id_question, quest.question, quest.answers[k], quest.k))
-
+        # Inserir dados na tabela "QUESTION"
+        self.cursor.execute("INSERT INTO question (id, question_text, option1, option2, option3, option4, correct_option) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (self.question_id_counter, question.question, question.answers[0], question.answers[1], question.answers[2], question.answers[3], question.k))
         self.connection_db.commit()
-        return "Nova pergunta: " + str(id_question)
+        return f"Nova pergunta: {self.question_id_counter}"
 
-
-    def addqset(self, quest_ids):
+    def addQset(self, quest_ids: List[int]):
         id_set = int(time.time() * 1000)
-
-        # Inserir dados na tabela q_set
-        self.cursor.execute("INSERT INTO q_set (id_set, question) VALUES (?, ?)",
+        # Inserir dados na tabela QSET
+        self.cursor.execute("INSERT INTO qset (id, questions) VALUES (?, ?)",
                             (id_set, ','.join(map(str, quest_ids))))
-
         self.connection_db.commit()
-        return "OK;" + str(id_set)
+        return f"OK; {id_set}"
 
-    def addquiz(self, quiz_data):
+    def addQuiz(self, quiz_data: List[int]):
         quest_set_id = int(quiz_data[0])
-        if quest_set_id not in list(self._quest_sets.keys()):
+        # Verificar se o conjunto de perguntas existe e se o número de perguntas corresponde
+        if quest_set_id not in self._quest_sets:
             return "NOK"
-        elif self._quest_sets.get(quest_set_id).num_quest() != len(quiz_data[1:]):
+        elif len(self._quest_sets[quest_set_id].quest_ids) != len(quiz_data[1:]):
             return "NOK"
         else:
             quiz_id = int(time.time() * 1000)
-
-            quest_points = {}
-            for i in range(self._quest_sets.get(quest_set_id).num_quest()):
-                quest_points[int(self._quest_sets.get(quest_set_id).quest_ids[i])] = int(quiz_data[i + 1])
-
-            quiz = Quiz(quest_set_id, quest_points)
+            quest_points = {int(self._quest_sets[quest_set_id].quest_ids[i]): int(quiz_data[i + 1]) for i in range(len(quiz_data[1:]))}
+            quiz = Quiz(quest_set_id, quest_points, self)
 
             # Inserir dados na tabela quiz
-            self.cursor.execute("INSERT INTO quiz (id_quiz, id_set, question_set) VALUES (?, ?, ?)",
-                                (quiz_id, quiz.id_set, ','.join(map(str, quiz.quest_set))))
-
+            self.cursor.execute("INSERT INTO quiz (id, status, timestamp_p, current_question, participants) VALUES (?, ?, ?, ?, ?)",
+                                (quiz_id, quiz.state, quiz.timestamp_P, quiz.questions_i, ','.join(map(str, quiz.participants))))
             self.connection_db.commit()
-            return "OK;" + str(quiz_id)
+            return f"OK; {quiz_id}"
 
+    def getQuestions(self):
+        self.cursor.execute("SELECT * FROM question")
+        questions = self.cursor.fetchall()
+        return questions
 
-    #def start_quiz(self, quiz_id):
-        if quiz_id not in list(self._quizzes.keys()):
-            return "NOK"
-        else:
-            self._quizzes[quiz_id].state = "ONGOING"
-            self._quizzes[quiz_id].timestamp_start = int(time.time())
-            return "OK"
-        self.cursor.execute
+    def getQuestSets(self):
+        self.cursor.execute("SELECT * FROM qset")
+        quest_sets = self.cursor.fetchall()
+        return quest_sets
+
+    def getQuizzes(self):
+        self.cursor.execute("SELECT * FROM quiz")
+        quizzes = self.cursor.fetchall()
+        return quizzes
