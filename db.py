@@ -28,8 +28,8 @@ def bd():
 
         cursor.execute("""
             CREATE TABLE quiz (
-                id_quiz INTEGER PRIMARY KEY, 
-                id_set VARCHAR, 
+                id_quiz INTEGER PRIMARY KEY AUTOINCREMENT,  
+                id_set VARCHAR,     
                 question_set VARCHAR, 
                 state VARCHAR, 
                 timestamp_p VARCHAR, 
@@ -58,5 +58,3 @@ def bd():
         return "Base de Dados já existe/foi criada"
     
     connection_db.close()
-
-    

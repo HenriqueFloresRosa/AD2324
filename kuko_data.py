@@ -6,126 +6,116 @@ Números de aluno: 56699 58618
 
 import time
 import copy
-import sqlite3
-from db import *
+"import sqlite3
+"from db import *
+from typing import Dict, List, Tuple
+
 
 class Question:
-    id_counter = 0
+    
 
-    def __init__(self, id_question, question, answers, k):
-        self.id_question = id_question
-        self.question = question
-        self.answers = copy.deepcopy(answers)
-        self.k = k
+    def __init__(self, answers: List[str], k: int, question=str, Kukodata):
+        self.id_question = len(Kukodata.getQuestions()) + 1
+        self.question = question  # pergunta
+        self.answers = answers  # respostas admitidas
+        self.k = k  # resposta correta
 
-    def __str__(self):
-        return f"{self.id_question};{self.question};{';'.join(self.answers)};{self.k}"
-
-class QSet:
-    id_counter = 0
-
-    def __init__(self, quest_ids):
-        self.id_set = QSet.id_counter
-        self.quest_ids = copy.deepcopy(quest_ids)
-
-    def num_quest(self):
-        return len(self.quest_ids)
+    def ID(self):
+        return self.id_question
 
     def __str__(self):
-        return f"QuestSet {self.id_set}: {self.quest_ids}"
+        return f"{self.id_question};{';'.join(self.answers)}"
 
-class QuizGame:
-    def __init__(self):
-        self.quests = {}
-        self.quest_sets = {}
-        self.quizzes = {}
+class QuestionSet:
 
-    def create_quest(self, question_text, options, correct_option_index):
-        quest = Question(question_text, options, correct_option_index)
-        self.quests[quest.id_quest] = quest
-        return quest.id_quest
+    def __init__(self, questions, Kukodata):
+        self.id_set = len(Kukodata.getQuestSets()) + 1
+        self.quest_ids = questions
 
-    def create_quest_set(self, quest_ids):
-        quest_set = QSet(quest_ids)
-        self.quest_sets[quest_set.id_set] = quest_set
-        return quest_set.id_set
+    def ID (self):
+        return self.id_set
 
-    def create_quiz(self, id_set, *points):
-        if id_set not in self.quest_sets:
-            return None
-        
-        quest_set = [self.quests[quest_id] for quest_id in self.quest_sets[id_set].quest_ids]
-        quiz_id = int(time.time() * 1000)  
-        quiz = Quiz(id_set, quest_set)
-        self.quizzes[quiz_id] = quiz
-        return quiz_id
 
-    def start_quiz(self, id_quiz):
-        if id_quiz not in self.quizzes:
-            return "NOK"
-        
-        quiz = self.quizzes[id_quiz]
-        if quiz.state != "PREPARED":
-            return "NOK"
-        
-        quiz.state = "ONGOING"
-        quiz.timestamp_start = int(time.time())
-        return "OK"
-
-    def get_result(self, quiz_id):
-        quiz_id = int(quiz_id)
-
-        if quiz_id not in self.quizzes:
-            return "NOK"
-        else:
-            quiz = self.quizzes[quiz_id]
-            total_questions = len(quiz.quest_set)
-            results = []
-            
-            for participant, responses in quiz.responses.items():
-                correct_answers = sum(responses)
-                score = correct_answers * 20
-                results.append(f"{quiz_id};acertou {correct_answers} em {total_questions}, com pontuação {score}")
-
-            return results
 
 class Quiz:
-    def __init__(self, id_set, quest_set, state="PREPARED"):
-        self.id_quiz = int(time.time() * 1000)  
+    def __init__(self, id_set, score_set, Kukodata):
+        self.id_quiz = len(Kukodata.getQuizzes()) + 1
         self.id_set = id_set
-        self.quest_set = quest_set
-        self.state = state
-        self.timestamp_start = 0  
-        self.current_quest_index = 0  
-        self.participants = []
-        self.responses = {}
 
-    def __str__(self):
-        return f"Quiz {self.id_quiz}: State - {self.state}, Questions - {self.quest_set}"
+        questions = []
+        i = 0
+        for question in Kukodata.getQuestions()[id_set ].questions:
+            questionCopy = copy.deepcopy(Kukodata.getQuestions().questions[question])
+            questions.append(questionCopy,score_set[i])
+            i += 1
+
+            self.questions_set = questions
+
+            self.state = "PREPARED"
+            self.timestamp_P = time.time()
+            self.timestamp_E = None
+            self.timestamp_i = 0
+            self.questions_i = 0
+            self.participants = []
+            self.replies = {}
+
+    def regsitar_participantes(self, participant_id):
+        self.participants.append(participant_id)
+        self.replies[participant_id] = []
+        for question in self.questions_set:
+            self.replies[participant_id].append(0)
+
+    def começar_quiz(self):
+        self.state = "ONGOING"
+
+    def getIDquiz(self):
+        return self.id_quiz
+    
+    def buscar_Participante(self):
+        return self.participants
+    
+    def buscar_correnteQuestion(self):
+        return self.questions_set[self.questions_i][0]
+    
+    def nextQuestion(self):
+        self.questions_i += 1
+        
+        if self.questions_i >= len(self.questions_set):
+            self.questions_i = 0
+            self.state = "ENDED"
+            self.timestamp_E = time.time()
+        
+        return self.questions_set[self.questions_i][0]
+    
+    def
+        
+        
+
+#########################################################################################################
+
 class KUKO:
     
     
     def __init__(self, db_file):
         self.connection_db = sqlite3.connect(db_file)
         self.cursor = self.connection_db.cursor()
-        self.question_id_counter = 0  # Inicializa o contador de ID de perguntas
+        self.question_id_counter = 0
 
-    def add_quest(self, question_text, options, correct_option_index):
-        # Incrementa o contador de ID de perguntas
-        self.question_id_counter += 1
-        id_quest = self.question_id_counter
+    def addquest(self,id_question, questions, answers, k):
+        #
+        id_question = self.question_id_counter
         
-        quest = Question(id_quest, question_text, options, correct_option_index)
+        quest = Question(id_question, questions, answers, k)
 
         # Insere dados na tabela "question"
-        self.cursor.execute("INSERT INTO question (id_question, question, answer, k) VALUES (?, ?, ?, ?)",
-                            (quest.id_question, quest.question, quest.answers[correct_option_index], quest.k))
+        self.cursor.execute("INSERT INTO question (id_question, questions, answers, k) VALUES (?, ?, ?, ?)",
+                            (quest.id_question, quest.question, quest.answers[k], quest.k))
 
         self.connection_db.commit()
-        return "Nova pergunta: " + str(id_quest)
+        return "Nova pergunta: " + str(id_question)
 
 
-    def add_quest_set(self, quest_ids):
+    def addqset(self, quest_ids):
         id_set = int(time.time() * 1000)
 
         # Inserir dados na tabela q_set
@@ -135,7 +125,7 @@ class KUKO:
         self.connection_db.commit()
         return "OK;" + str(id_set)
 
-    def add_quiz(self, quiz_data):
+    def addquiz(self, quiz_data):
         quest_set_id = int(quiz_data[0])
         if quest_set_id not in list(self._quest_sets.keys()):
             return "NOK"
@@ -158,7 +148,7 @@ class KUKO:
             return "OK;" + str(quiz_id)
 
 
-    def start_quiz(self, quiz_id):
+    #def start_quiz(self, quiz_id):
         if quiz_id not in list(self._quizzes.keys()):
             return "NOK"
         else:

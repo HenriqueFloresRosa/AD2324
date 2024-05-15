@@ -1,8 +1,21 @@
+
+"""
+Aplicações Distribuídas - Projeto 1 - net_client.py
+Grupo: 14
+Números de aluno: 56699 58618
+"""
+
+
 import sys
 from flask import Flask, request, jsonify
 from kuko_data import KUKO
+import sqlite3, json
+from os.path import isfile
+
 
 app = Flask(__name__)
+
+
 kuko_data = KUKO()  # Instanciando a classe KukoData para lidar com as operações de banco de dados
 
 
