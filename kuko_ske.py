@@ -14,4 +14,7 @@ class skeServer:
 
     def processMessage(self, pedidolist):
         cpo = pedidolist[0]
-        id_participant = int()
+        id_participant = int(pedidoList.pop(-1))
+        
+
+    
