@@ -1,105 +1,75 @@
-
 """
-Aplicações Distribuídas - Projeto 1 - net_client.py
+Aplicações Distribuídas - Projeto 1 - sock_utils.py
 Grupo: 14
 Números de aluno: 56699 58618
 """
 
+import sys
 from flask import Flask, request, jsonify
-import sqlite3
+from kuko_data import KUKO
 
 app = Flask(__name__)
-db_file = 'quiz.db'
+kuko_data = KUKO()  # Instanciando a classe KukoData para lidar com as operações de banco de dados
 
-def get_db_connection():
-    conn = sqlite3.connect(db_file)
-    conn.row_factory = sqlite3.Row
-    return conn
 
-@app.route('/question', methods=['POST'])
-def add_question():
-    data = request.get_json()
-    question_text = data['question_text']
-    option1 = data['option1']
-    option2 = data['option2']
-    option3 = data['option3']
-    option4 = data['option4']
-    correct_option = data['correct_option']
+@app.route('/question', methods=['POST', 'GET'])
+def handle_question():
+    if request.method == 'POST':
+        # Implemente a lógica para adicionar uma nova pergunta
+        question_info = request.json  # Aqui você pode acessar os dados JSON enviados pelo cliente
+        question_id = kuko_data.add_question(question_info)
+        if question_id:
+            return jsonify({"status": "OK", "question_id": question_id}), 201
+        else:
+            return jsonify({"status": "NOK"}), 400
+    elif request.method == 'GET':
+        # Implemente a lógica para obter todas as perguntas cadastradas
+        questions = kuko_data.get_all_questions()
+        return jsonify(questions), 200
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO question (question_text, option1, option2, option3, option4, correct_option) VALUES (?, ?, ?, ?, ?, ?)",
-        (question_text, option1, option2, option3, option4, correct_option)
-    )
-    conn.commit()
-    question_id = cursor.lastrowid
-    conn.close()
-    return jsonify({"id": question_id, "message": "Question added successfully"}), 201
 
-@app.route('/question', methods=['GET'])
-def get_question():
-    question_id = request.args.get('id')
-    conn = get_db_connection()
-    question = conn.execute('SELECT * FROM question WHERE id = ?', (question_id,)).fetchone()
-    conn.close()
-    if question is None:
-        return jsonify({"message": "Question not found"}), 404
-    return jsonify(dict(question)), 200
+@app.route('/qset', methods=['POST', 'GET'])
+def handle_qset():
+    if request.method == 'POST':
+        # Logica de POST
+        qset_info = request.json  # Aqui você pode acessar os dados JSON enviados pelo cliente
+        qset_id = kuko_data.add_question_set(qset_info)
+        if qset_id:
+            return jsonify({"status": "OK", "qset_id": qset_id}), 201
+        else:
+            return jsonify({"status": "NOK"}), 400
+    elif request.method == 'GET':
+        # Logica de GET
+        qsets = kuko_data.get_all_question_sets()
+        return jsonify(qsets), 200
 
-@app.route('/qset', methods=['POST'])
-def add_qset():
-    data = request.get_json()
-    question_ids = ','.join(map(str, data['questions']))
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO qset (questions) VALUES (?)",
-        (question_ids,)
-    )
-    conn.commit()
-    qset_id = cursor.lastrowid
-    conn.close()
-    return jsonify({"id": qset_id, "message": "Question set added successfully"}), 201
+@app.route('/quizgame', methods=['POST', 'GET'])
+def handle_quizgame():
+    if request.method == 'POST':
+        # Logica de POST
+        quiz_info = request.json  # Aqui você pode acessar os dados JSON enviados pelo cliente
+        quiz_id = kuko_data.add_quiz(quiz_info)
+        if quiz_id:
+            return jsonify({"status": "OK", "quiz_id": quiz_id}), 201
+        else:
+            return jsonify({"status": "NOK"}), 400
+        
+    elif request.method == 'GET':
+        # Logica de GET
+        qsets = kuko_data.get_all_question_sets()
+        return jsonify(qsets), 200
 
-@app.route('/qset', methods=['GET'])
-def get_qset():
-    qset_id = request.args.get('id')
-    conn = get_db_connection()
-    qset = conn.execute('SELECT * FROM qset WHERE id = ?', (qset_id,)).fetchone()
-    conn.close()
-    if qset is None:
-        return jsonify({"message": "Question set not found"}), 404
-    return jsonify(dict(qset)), 200
 
-@app.route('/quiz', methods=['POST'])
-def add_quiz():
-    data = request.get_json()
-    id_set = data['id_set']
-    scores = data['scores']
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: python kuko_server.py <host> <port>")
+        return
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO quiz (id_set, scores) VALUES (?, ?)",
-        (id_set, ','.join(map(str, scores)))
-    )
-    conn.commit()
-    quiz_id = cursor.lastrowid
-    conn.close()
-    return jsonify({"id": quiz_id, "message": "Quiz added successfully"}), 201
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    app.run(host=host, port=port)
 
-@app.route('/quiz', methods=['GET'])
-def get_quiz():
-    quiz_id = request.args.get('id')
-    conn = get_db_connection()
-    quiz = conn.execute('SELECT * FROM quiz WHERE id = ?', (quiz_id,)).fetchone()
-    conn.close()
-    if quiz is None:
-        return jsonify({"message": "Quiz not found"}), 404
-    return jsonify(dict(quiz)), 200
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
+if __name__ == "__main__":
+    main()
