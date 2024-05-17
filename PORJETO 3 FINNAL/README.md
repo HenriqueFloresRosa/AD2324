@@ -1,3 +1,0 @@
-# PROJETO 3 
-
-Criação da API FLASK DO KUKOO WEB
